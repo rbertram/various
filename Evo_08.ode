@@ -1,0 +1,96 @@
+# Evo_08.ode
+
+# Circadian oscillator in Drosophila, with two CK2 isoforms. From
+# M. Tomaiuolo, R. Bertram, and D. Houle, "Enzyme Isoforms May Increase
+# Phenotypic Robustness", Evolution, 62:2884-2893, 2008.
+
+# Initial Conditions
+
+# Variables:
+#     Mp -- PER mRNA concentration
+#     P0 -- unphosphorylated PER protein concentration
+#     P1 -- phosphorylated PER protein concentration
+#     P2 -- doubly phosphorylated PER protein concentration
+#     P2N -- nuclear doubly phosphorylated PER protein concentration
+
+Mp(0)=0
+P0(0)=1
+P1(0)=1
+P2(0)=1
+P2N(0)=0
+
+#parameters
+
+par n=2 
+par Vmp=0.7
+par Kmp=0.2
+par Vdp=2
+par k_1=0.155, k_2=0.2
+par Kip=1, Kdp=0.2
+par Kp=2
+par V1p=8, V2p=1
+par V3p=8, V4p=1
+par k_sp=0.9
+par K11p=1
+par K12p=4
+par alpha=0.1
+par eps=1
+par eps_b=1
+par eps_bi=2
+par k_d=0.01, k_dn=0.01
+par Vsp=1
+par dck=0.1
+par kck=1
+par taua=0.5
+par ton=48
+par toff=49
+par noise=0
+
+# Functions
+
+# Mp
+
+Mp_g= Vsp*(Kip^n/ (Kip^n+P2N^n))
+Mp_d= Vmp*(Mp / (Kmp  +Mp)) +k_d*Mp
+
+# P0
+
+P0_g= V2p*(P1/(Kp+P1)) + k_sp*Mp
+P0_d= V1p*(alpha*(P0/(K11p+P0)) + (1-alpha)*(P0/(K12p+P0))) + k_d *P0
+
+# P1
+
+P1_g=  V1p*(alpha*(P0/(K11p+P0)) + (1-alpha)*(P0/(K12p+P0))) + V4p* (P2/(Kp+P2)) 
+P1_d= V2p*(P1/(Kp+P1)) + V3p*(alpha*(P1/(K11p+P1)) + (1-alpha)*(P1/(K12p+P1))) + k_d*P1
+
+# P2
+
+P2_g= V3p*(alpha*(P1/(K11p+P1)) + (1-alpha)*(P1/(K12p+P1))) + k_2*P2N
+P2_d= V4p* (P2/(Kp+P2)) + k_1*P2 + Vdp* (P2/(Kdp+P2)) + k_d*P2
+
+# P2N
+
+P2N_g = k_1*P2
+P2N_d = k_2*P2N + k_dn*P2N
+
+# Pt
+
+Pt = P0 + P1 + P2 + P2N
+
+# Equations
+
+Mp'  =Mp_g-Mp_d  
+P0'  =P0_g-P0_d 
+P1'  =P1_g-P1_d 
+P2'  =P2_g-P2_d 
+P2N' = P2N_g-P2N_d
+
+# set xpp parameters
+
+@ dt=0.1, total=500, maxstor=20000
+@ method=E
+@ bounds=10000000, xp=t, yp=P0
+@ xlo=100, xhi=500, ylo=0, yhi=4
+
+done
+quit
